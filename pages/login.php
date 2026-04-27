@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (mysqli_num_rows($result) > 0) {
         $_SESSION['user'] = $email;
         mysqli_query($conn, "UPDATE users SET status='online' WHERE email='$email'");
-        header("Location: home.php");
+        header("Location: pages/home.php");
         exit();
     } else {
         echo "Invalid email or password!";

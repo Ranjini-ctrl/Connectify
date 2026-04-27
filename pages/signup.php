@@ -26,7 +26,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     if($stmt->execute()){
       echo "<script>
               alert('Signup Successful!');
-              window.location='pages/login.php';
+              window.location='login.php';
             </script>";
       exit;
     } else {

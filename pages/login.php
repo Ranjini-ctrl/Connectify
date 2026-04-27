@@ -1,11 +1,11 @@
 <?php
 session_start();
-include "config/db.php";
+include "../config/db.php"; // adjust path if needed
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+    $email = mysqli_real_escape_string($conn, $_POST['email']);
+    $password = mysqli_real_escape_string($conn, $_POST['password']);
 
     if (empty($email) || empty($password)) {
         echo "All fields are required!";
@@ -17,8 +17,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (mysqli_num_rows($result) > 0) {
         $_SESSION['user'] = $email;
+
         mysqli_query($conn, "UPDATE users SET status='online' WHERE email='$email'");
-        header("Location: pages/home.php");
+
+        header("Location: home.php"); 
         exit();
     } else {
         echo "Invalid email or password!";

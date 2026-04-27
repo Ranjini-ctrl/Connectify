@@ -2,7 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: pages/login.php");
     exit();
 }
 ?>
@@ -44,7 +44,7 @@ function logoutUser() {
     if (confirm("Are you sure you want to logout?")) {
         fetch('../api/logout.php', { method: 'POST' })   // ✅ FIXED PATH
         .then(() => {
-            window.location.href = "login.php";
+            window.location.href = "pages/index.php";
         });
     }
 }

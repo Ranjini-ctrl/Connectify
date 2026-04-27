@@ -1,9 +1,9 @@
 <?php
 session_start();
-include "db.php";
+include "config/db.php";
 
 if (!isset($_SESSION['user'])) {
-    header("Location: login.html");
+    header("Location: pages/login.html");
     exit();
 }
 
@@ -130,7 +130,7 @@ $query = mysqli_query($conn, "SELECT username, status FROM users");
 
     <!-- Logout at bottom -->
     <div class="logout-btn">
-        <a href="logout.php">Logout</a>
+        <a href="pages/logout.php">Logout</a>
     </div>
 
 </div>

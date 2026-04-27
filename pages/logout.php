@@ -9,6 +9,6 @@ mysqli_query($conn, "UPDATE users SET status='offline' WHERE email='$email'");
 
 session_destroy();
 
-header("Location: login.html");
+header("Location: pages/login.html");
 exit();
 ?>

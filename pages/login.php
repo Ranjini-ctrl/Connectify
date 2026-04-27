@@ -1,8 +1,9 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
 session_start();
-include "../config/db.php"; // adjust path if needed
+include "../config/db.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
@@ -14,20 +15,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    $query = "SELECT * FROM users WHERE email='$email' AND password='$password'";
+    // run query
+    $query = "SELECT * FROM users WHERE email='$email'";
+    $result = mysqli_query($conn, $query);
+
     if (!$result) {
-    die("Query failed: " . mysqli_error($conn));
-}
+        die("Query failed: " . mysqli_error($conn));
+    }
 
     if (mysqli_num_rows($result) > 0) {
-        $_SESSION['user'] = $email;
+        $row = mysqli_fetch_assoc($result);
 
-        mysqli_query($conn, "UPDATE users SET status='online' WHERE email='$email'");
+        // verify password (since you used password_hash in signup)
+        if (password_verify($password, $row['password'])) {
 
-        header("Location: home.php"); 
-        exit();
+            $_SESSION['user'] = $email;
+
+            mysqli_query($conn, "UPDATE users SET status='online' WHERE email='$email'");
+
+            header("Location: home.php");
+            exit();
+
+        } else {
+            echo "Invalid password!";
+        }
+
     } else {
-        echo "Invalid email or password!";
+        echo "User not found!";
     }
 }
 ?>

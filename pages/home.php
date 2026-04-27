@@ -4,22 +4,21 @@ ini_set('display_errors', 1);
 
 session_start();
 
-
+// ✅ Single session check
 if (!isset($_SESSION['user'])) {
-    echo "Session not set!";
+    header("Location: login.php");
     exit();
 }
 
-include "config/db.php";
+// ✅ Correct path
+include "../config/db.php";
 
-// Check login
-if (!isset($_SESSION['user'])) {
-    header("Location: pages/login.php");
-    exit();
+// ✅ Use correct column name (name instead of username)
+$query = mysqli_query($conn, "SELECT name, status FROM users");
+
+if (!$query) {
+    die("Query error: " . mysqli_error($conn));
 }
-
-// Fetch users
-$query = mysqli_query($conn, "SELECT username, status FROM users");
 ?>
 
 <!DOCTYPE html>
@@ -35,7 +34,6 @@ $query = mysqli_query($conn, "SELECT username, status FROM users");
             background: linear-gradient(to bottom,#190019,#2B124C,#522B5B,#854F6C);
         }
 
-        /* NAVBAR */
         nav {
             display: flex;
             justify-content: space-between;
@@ -44,7 +42,6 @@ $query = mysqli_query($conn, "SELECT username, status FROM users");
             color: white;
         }
 
-        /* MAIN BOX */
         .container {
             display: flex;
             justify-content: center;
@@ -60,9 +57,6 @@ $query = mysqli_query($conn, "SELECT username, status FROM users");
             box-shadow: 0 15px 40px rgba(0,0,0,0.4);
         }
 
-        h2 { color: #2B124C; }
-        p { color: #522B5B; }
-
         .user {
             margin-top: 8px;
             padding: 10px;
@@ -70,7 +64,6 @@ $query = mysqli_query($conn, "SELECT username, status FROM users");
             border-radius: 10px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
         }
 
         .status-dot {
@@ -82,41 +75,30 @@ $query = mysqli_query($conn, "SELECT username, status FROM users");
         .online { background: green; }
         .offline { background: gray; }
 
-        /* Dropdown */
         .menu {
             display: none;
             position: absolute;
             right: 10px;
             top: 50px;
             background: white;
-            color: black;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
         .menu a {
             display: block;
             padding: 10px;
             text-decoration: none;
-            color: black;
-        }
-
-        .menu a:hover {
-            background: #eee;
         }
     </style>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
 <nav>
     <h2>Connectify</h2>
 
     <div style="position:relative;">
-        <button onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;">
-            ⚙️
-        </button>
+        <button onclick="toggleMenu()">⚙️</button>
 
         <div id="menu" class="menu">
             <a href="profile.php">Profile</a>
@@ -125,7 +107,6 @@ $query = mysqli_query($conn, "SELECT username, status FROM users");
     </div>
 </nav>
 
-<!-- MAIN CONTENT -->
 <div class="container">
     <div class="home-box">
         <h2>Welcome 🎉</h2>
@@ -135,7 +116,7 @@ $query = mysqli_query($conn, "SELECT username, status FROM users");
 
         <?php while ($row = mysqli_fetch_assoc($query)) { ?>
             <div class="user">
-                <span><?php echo $row['username']; ?></span>
+                <span><?php echo $row['name']; ?></span>
                 <span class="status-dot <?php echo $row['status']; ?>"></span>
             </div>
         <?php } ?>
@@ -143,20 +124,17 @@ $query = mysqli_query($conn, "SELECT username, status FROM users");
 </div>
 
 <script>
-// Toggle dropdown
 function toggleMenu() {
     let menu = document.getElementById("menu");
     menu.style.display = (menu.style.display === "block") ? "none" : "block";
 }
 
-// Logout
 function logoutUser() {
     if (confirm("Logout?")) {
-        window.location.href = "pages/logout.php"; // simple and reliable
+        window.location.href = "logout.php"; // ✅ FIXED
     }
 }
 
-// Close menu
 window.onclick = function(e) {
     if (!e.target.closest("button")) {
         document.getElementById("menu").style.display = "none";

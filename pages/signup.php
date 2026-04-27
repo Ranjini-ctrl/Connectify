@@ -2,8 +2,6 @@
 session_start();
 include ("../config/db.php");
 
-$msg = "";
-
 if($_SERVER["REQUEST_METHOD"] == "POST"){
   $name = $_POST['name'];
   $email = $_POST['email'];
@@ -18,19 +16,16 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
   $result = $stmt->get_result();
 
   if($result->num_rows > 0){
-    $msg = "Email already exists!";
+    echo "Email already exists!";
   } else {
     $stmt = $conn->prepare("INSERT INTO users(name,email,password) VALUES(?,?,?)");
     $stmt->bind_param("sss", $name, $email, $hashed);
 
     if($stmt->execute()){
-      echo "<script>
-              alert('Signup Successful!');
-              window.location='login.php';
-            </script>";
-      exit;
+        header("Location: login.html"); // ✅ FIXED
+        exit();
     } else {
-      $msg = "Error occurred!";
+        echo "Error occurred!";
     }
   }
 }

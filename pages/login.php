@@ -7,26 +7,26 @@ include "../config/db.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $password = mysqli_real_escape_string($conn, $_POST['password']);
+    $email = $_POST['email'];
+    $password = $_POST['password'];
 
     if (empty($email) || empty($password)) {
         echo "All fields are required!";
         exit();
     }
 
-    // run query
+    // get user by email
     $query = "SELECT * FROM users WHERE email='$email'";
     $result = mysqli_query($conn, $query);
 
     if (!$result) {
-        die("Query failed: " . mysqli_error($conn));
+        die("Query error: " . mysqli_error($conn));
     }
 
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
 
-        // verify password (since you used password_hash in signup)
+        // ✅ verify hashed password
         if (password_verify($password, $row['password'])) {
 
             $_SESSION['user'] = $email;
@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit();
 
         } else {
-            echo "Invalid password!";
+            echo "Wrong password!";
         }
 
     } else {

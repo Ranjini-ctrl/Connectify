@@ -1,14 +1,20 @@
 <?php
 session_start();
-include "db.php";
+include "../config/db.php"; // adjust path if needed
 
-$email = $_SESSION['user'];
+// Check if session exists
+if (isset($_SESSION['user'])) {
+    $email = $_SESSION['user'];
 
-// update status to offline
-mysqli_query($conn, "UPDATE users SET status='offline' WHERE email='$email'");
+    // Update user status to offline
+    mysqli_query($conn, "UPDATE users SET status='offline' WHERE email='$email'");
+}
 
+// Destroy session
+$_SESSION = [];
 session_destroy();
 
-header("Location: pages/login.html");
+// Redirect to login page
+header("Location: login.php");
 exit();
 ?>

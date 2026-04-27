@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 session_start();
 include "../config/db.php"; // adjust path if needed
 
@@ -13,7 +15,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     $query = "SELECT * FROM users WHERE email='$email' AND password='$password'";
-    $result = mysqli_query($conn, $query);
+    if (!$result) {
+    die("Query failed: " . mysqli_error($conn));
+}
 
     if (mysqli_num_rows($result) > 0) {
         $_SESSION['user'] = $email;

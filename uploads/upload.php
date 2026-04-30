@@ -3,8 +3,8 @@ session_start();
 include("../config/db.php");
 
 // Check session
-if(!isset($_SESSION['user'])){
-    echo "Session not set!";
+if (!isset($_SESSION['user'])) {
+    echo "Session not found!";
     exit();
 }
 
@@ -12,30 +12,25 @@ $user = $_SESSION['user'];
 
 if(isset($_FILES['profile_pic'])){
 
-    // 🔍 DEBUG: show file details
-    echo "<pre>";
-    print_r($_FILES);
-    echo "</pre>";
-
     $file = $_FILES['profile_pic'];
+
+    // 🔹 File info
     $filename = time() . "_" . $file['name'];
     $tempname = $file['tmp_name'];
 
+    // 🔹 Upload path
     $folder = "../uploads/" . $filename;
 
-    // 🔍 DEBUG: show path
-    echo "Saving to: " . $folder . "<br>";
-
+    // 🔹 Move file to uploads folder
     if(move_uploaded_file($tempname, $folder)){
 
-        echo "✅ File uploaded<br>";
-
+        // 🔹 Save filename in DB
         $sql = "UPDATE users SET profile_pic='$filename' WHERE name='$user'";
 
         if($conn->query($sql)){
-            echo "✅ DB updated<br>";
+            echo "✅ File uploaded + DB updated";
 
-            // 👉 COMMENT this while debugging
+            // Redirect after success
             header("Location: profile.php");
             exit();
 
@@ -44,7 +39,7 @@ if(isset($_FILES['profile_pic'])){
         }
 
     } else {
-        echo "❌ Upload failed!";
+        echo "❌ Upload failed";
     }
 }
 ?>

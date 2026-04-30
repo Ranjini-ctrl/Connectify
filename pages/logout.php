@@ -15,6 +15,6 @@ $_SESSION = [];
 session_destroy();
 
 // Redirect to login page
-header("Location: index.html");
+header("Location: pages/index.html");
 exit();
 ?>

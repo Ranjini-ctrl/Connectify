@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    // get user by email
+    // 🔹 Get user by email
     $query = "SELECT * FROM users WHERE email='$email'";
     $result = mysqli_query($conn, $query);
 
@@ -24,15 +24,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (mysqli_num_rows($result) > 0) {
+
         $row = mysqli_fetch_assoc($result);
 
-        // ✅ verify hashed password
+        // ✅ Verify password
         if (password_verify($password, $row['password'])) {
 
-            $_SESSION['user'] = $email;
+            // ⭐ IMPORTANT SESSION VALUES
+            $_SESSION['user'] = $row['name'];      // for display
+            $_SESSION['user_id'] = $row['id'];     // for DB operations
+            $_SESSION['email'] = $row['email'];    // optional
 
-            mysqli_query($conn, "UPDATE users SET status='online' WHERE email='$email'");
+            // 🔹 Update user status
+            mysqli_query($conn, "UPDATE users SET status='online' WHERE id='{$row['id']}'");
 
+            // 🔹 Redirect
             header("Location: home.php");
             exit();
 

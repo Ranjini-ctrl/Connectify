@@ -2,49 +2,55 @@
 session_start();
 include("../config/db.php");
 
-// Check session
-if(!isset($_SESSION['user'])){
-    echo "Session not set!";
-    exit();
+// 🔒 Check login session
+if (!isset($_SESSION['user_id'])) {
+    die("Session not found!");
 }
 
-$user = $_SESSION['user'];
+$user_id = $_SESSION['user_id'];
 
-if(isset($_FILES['profile_pic'])){
-
-    // 🔍 DEBUG: show file details
-    echo "<pre>";
-    print_r($_FILES);
-    echo "</pre>";
+// 📁 Check file upload
+if (isset($_FILES['profile_pic']) && $_FILES['profile_pic']['error'] == 0) {
 
     $file = $_FILES['profile_pic'];
-    $filename = time() . "_" . $file['name'];
-    $tempname = $file['tmp_name'];
 
+    // 📌 File details
+    $filename = time() . "_" . basename($file['name']);
+    $tempname = $file['tmp_name'];
     $folder = "../uploads/" . $filename;
 
-    // 🔍 DEBUG: show path
-    echo "Saving to: " . $folder . "<br>";
+    // ✅ Move file to uploads folder
+    if (move_uploaded_file($tempname, $folder)) {
 
-    if(move_uploaded_file($tempname, $folder)){
+        // 🔍 Get old profile picture
+        $result = $conn->query("SELECT profile_pic FROM users WHERE id='$user_id'");
 
-        echo "✅ File uploaded<br>";
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $oldPic = $row['profile_pic'];
 
-        $sql = "UPDATE users SET profile_pic='$filename' WHERE name='$user'";
+            // 🗑️ Delete old image if exists
+            if (!empty($oldPic) && file_exists("../uploads/" . $oldPic)) {
+                unlink("../uploads/" . $oldPic);
+            }
+        }
 
-        if($conn->query($sql)){
-            echo "✅ DB updated<br>";
+        // 💾 Update new image in DB
+        $sql = "UPDATE users SET profile_pic='$filename' WHERE id='$user_id'";
 
-            // 👉 COMMENT this while debugging
-            header("Location: profile.php");
+        if ($conn->query($sql)) {
+            // 🔁 Redirect after success
+            header("Location: profile.php?upload=success");
             exit();
-
         } else {
-            echo "❌ DB Error: " . $conn->error;
+            echo "❌ Database Error: " . $conn->error;
         }
 
     } else {
-        echo "❌ Upload failed!";
+        echo "❌ Failed to upload file!";
     }
+
+} else {
+    echo "❌ No file selected or file error!";
 }
 ?>

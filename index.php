@@ -1,3 +1,13 @@
+<?php
+session_start();
+
+// ✅ If already logged in → go to home
+if (isset($_SESSION['user_id'])) {
+    header("Location: home.php");
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,10 +18,7 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-
-            /* Attractive Gradient Background */
             background: linear-gradient(135deg, #667eea, #764ba2);
-
             color: white;
             text-align: center;
         }
@@ -35,20 +42,21 @@
             margin-bottom: 30px;
         }
 
-        button {
+        .btn {
             padding: 12px 25px;
             margin: 10px;
             border: none;
             border-radius: 25px;
             font-size: 16px;
             cursor: pointer;
-
             background: white;
             color: #333;
+            text-decoration: none;
+            display: inline-block;
             transition: 0.3s;
         }
 
-        button:hover {
+        .btn:hover {
             background: #ddd;
         }
 
@@ -64,11 +72,11 @@
 
     <div class="container">
         <h1>Connectify</h1>
-
         <h2>Connect. Chat. Stay safe.</h2>
 
-        <button onclick="location.href='signup.php'">Sign Up</button>
-        <button onclick="location.href='index.php'">Login</button> 
+        <!-- ✅ Correct navigation -->
+        <a href="signup.php" class="btn">Sign Up</a>
+        <a href="login.php" class="btn">Login</a>
     </div>
 
     <div class="about">

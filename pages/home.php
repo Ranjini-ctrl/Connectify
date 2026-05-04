@@ -13,7 +13,7 @@ if (!isset($_SESSION['user'])) {
 // ✅ Correct path
 include "../config/db.php";
 
-// ✅ Use correct column name (name instead of username)
+// ✅ Fetch users
 $query = mysqli_query($conn, "SELECT name, status FROM users");
 
 if (!$query) {
@@ -32,6 +32,14 @@ if (!$query) {
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
             background: linear-gradient(to bottom,#190019,#2B124C,#522B5B,#854F6C);
+            color: black;
+            transition: 0.3s;
+        }
+
+        /* 🌙 Dark Mode */
+        body.dark-mode {
+            background: #121212;
+            color: white;
         }
 
         nav {
@@ -40,6 +48,10 @@ if (!$query) {
             padding: 12px 20px;
             background: #2c3e50;
             color: white;
+        }
+
+        body.dark-mode nav {
+            background: #1f1f1f;
         }
 
         .container {
@@ -57,6 +69,10 @@ if (!$query) {
             box-shadow: 0 15px 40px rgba(0,0,0,0.4);
         }
 
+        body.dark-mode .home-box {
+            background: #1e1e1e;
+        }
+
         .user {
             margin-top: 8px;
             padding: 10px;
@@ -64,6 +80,10 @@ if (!$query) {
             border-radius: 10px;
             display: flex;
             justify-content: space-between;
+        }
+
+        body.dark-mode .user {
+            background: #2a2a2a;
         }
 
         .status-dot {
@@ -84,10 +104,28 @@ if (!$query) {
             border-radius: 8px;
         }
 
+        body.dark-mode .menu {
+            background: #2a2a2a;
+        }
+
         .menu a {
             display: block;
             padding: 10px;
             text-decoration: none;
+            color: black;
+        }
+
+        body.dark-mode .menu a {
+            color: white;
+        }
+
+        /* 🌗 Theme Button */
+        #themeToggle {
+            margin-right: 10px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 6px;
         }
     </style>
 </head>
@@ -97,7 +135,12 @@ if (!$query) {
 <nav>
     <h2>Connectify</h2>
 
-    <div style="position:relative;">
+    <div style="display:flex; align-items:center; gap:10px; position:relative;">
+        
+        <!-- 🌙 Theme Toggle -->
+        <button id="themeToggle">🌙</button>
+
+        <!-- ⚙️ Menu -->
         <button onclick="toggleMenu()">⚙️</button>
 
         <div id="menu" class="menu">
@@ -124,22 +167,53 @@ if (!$query) {
 </div>
 
 <script>
+// ⚙️ Menu Toggle
 function toggleMenu() {
     let menu = document.getElementById("menu");
     menu.style.display = (menu.style.display === "block") ? "none" : "block";
 }
 
+// 🚪 Logout
 function logoutUser() {
     if (confirm("Logout?")) {
-        window.location.href = "logout.php"; // ✅ FIXED
+        window.location.href = "logout.php";
     }
 }
 
+// ❌ Close menu when clicking outside
 window.onclick = function(e) {
     if (!e.target.closest("button")) {
         document.getElementById("menu").style.display = "none";
     }
 }
+
+// 🌗 THEME TOGGLE LOGIC
+const toggleBtn = document.getElementById("themeToggle");
+
+// ✅ Load saved theme
+window.onload = () => {
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "dark") {
+        document.body.classList.add("dark-mode");
+        toggleBtn.textContent = "☀️";
+    } else {
+        toggleBtn.textContent = "🌙";
+    }
+};
+
+// ✅ Toggle theme
+toggleBtn.addEventListener("click", () => {
+    document.body.classList.toggle("dark-mode");
+
+    if (document.body.classList.contains("dark-mode")) {
+        localStorage.setItem("theme", "dark");
+        toggleBtn.textContent = "☀️";
+    } else {
+        localStorage.setItem("theme", "light");
+        toggleBtn.textContent = "🌙";
+    }
+});
 </script>
 
 </body>

@@ -38,8 +38,6 @@ $profilePic = !empty($data['profile_pic']) ? $data['profile_pic'] : "default.png
 
 <br><br>
 
-<button onclick="toggleTheme()">Toggle Theme</button>
-
 <script src="../assets/js/theme.js"></script>
 
 </body>

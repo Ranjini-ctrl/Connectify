@@ -1,9 +1,10 @@
 <?php
+ob_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 session_start();
-include "config/db.php"; // ✅ FIXED PATH
+include "../config/db1.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
@@ -11,38 +12,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
     if (empty($email) || empty($password)) {
-        $error = "All fields are required!";
+        echo "All fields are required!";
+        exit();
+    }
+
+    $query = "SELECT * FROM users WHERE email='$email' AND password='$password'";
+    $result = mysqli_query($conn, $query);
+
+    if (mysqli_num_rows($result) > 0) {
+        $_SESSION['user'] = $email;
+
+        mysqli_query($conn, "UPDATE users SET status='online' WHERE email='$email'");
+
+        header("Location: ../pages/home1.php");
+        exit();
     } else {
-
-        $query = "SELECT * FROM users WHERE email='$email'";
-        $result = mysqli_query($conn, $query);
-
-        if (!$result) {
-            die("Query error: " . mysqli_error($conn));
-        }
-
-        if (mysqli_num_rows($result) > 0) {
-
-            $row = mysqli_fetch_assoc($result);
-
-            if (password_verify($password, $row['password'])) {
-
-                $_SESSION['user'] = $row['name'];
-                $_SESSION['user_id'] = $row['id'];
-                $_SESSION['email'] = $row['email'];
-
-                mysqli_query($conn, "UPDATE users SET status='online' WHERE id='{$row['id']}'");
-
-                header("Location: home.php"); // ✅ SIMPLE REDIRECT
-                exit();
-
-            } else {
-                $error = "Wrong password!";
-            }
-
-        } else {
-            $error = "User not found!";
-        }
+        echo "Invalid email or password!";
     }
 }
 ?>
@@ -50,50 +35,101 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login - Connectify</title>
+    <title>Connectify Login</title>
 
     <style>
-        body {
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(to bottom, #190019, #2B124C, #522B5B, #854F6C);
+
+            background: linear-gradient(
+                to bottom,
+                #190019,
+                #2B124C,
+                #522B5B,
+                #854F6C
+            );
         }
 
         .login-box {
             background: #FBE4D8;
-            padding: 30px;
+            padding: 40px;
             width: 320px;
             border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
             text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        h2 {
+            color: #2B124C;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #854F6C;
+            font-size: 14px;
+            margin-bottom: 20px;
         }
 
         input {
             width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            background: #DFB6B2;
+            color: #190019;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus {
+            background: #ffffff;
+        }
+
+        ::placeholder {
+            color: #522B5B;
         }
 
         button {
             width: 100%;
-            margin-top: 20px;
-            padding: 10px;
+            padding: 12px;
+            margin-top: 15px;
             border: none;
-            border-radius: 8px;
-            background: #522B5B;
-            color: white;
+            border-radius: 10px;
+            background: #2B124C;
+            color: #FBE4D8;
+            font-size: 15px;
             cursor: pointer;
+            transition: 0.3s;
         }
 
-        .error {
-            color: red;
-            margin-top: 10px;
+        button:hover {
+            background: #190019;
+        }
+
+        .login-box {
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -101,23 +137,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
 
 <div class="login-box">
-    <h2>Login</h2>
+    <h2>Connectify</h2>
+    <p>Login to continue</p>
 
-    <!-- ✅ Show error -->
-    <?php if (!empty($error)) { ?>
-        <div class="error"><?php echo $error; ?></div>
-    <?php } ?>
-
-    <!-- ✅ No action needed -->
     <form method="POST">
-        <input type="email" name="email" placeholder="Email" required>
-        <input type="password" name="password" placeholder="Password" required>
+        <input type="email" name="email" placeholder="Enter Email" required>
+<div style="position: relative;">
+        <input type="password" id="password" name="password" placeholder="Enter Password" required>
 
+        <span onclick="togglePassword()" 
+          style="position: absolute; right: 10px; top: 12px; cursor: pointer;">
+        👁️
+        </span>
+</div>
         <button type="submit">Login</button>
     </form>
-
-    <p>Don't have an account? <a href="signup.php">Sign up</a></p>
 </div>
+<script>
+function togglePassword() {
+    let pass = document.getElementById("password");
 
+    if (pass.type === "password") {
+        pass.type = "text";
+    } else {
+        pass.type = "password";
+    }
+}
+</script>
 </body>
 </html>

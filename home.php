@@ -4,14 +4,19 @@ ini_set('display_errors', 1);
 
 session_start();
 
-// ✅ Single session check
+// 🔒 Session check
 if (!isset($_SESSION['user'])) {
     header("Location: login.php");
     exit();
 }
 
-// ✅ Correct path
-include "../config/db.php";
+// ✅ FIXED PATH (change if needed)
+include __DIR__ . "/config/db.php";
+
+// ❗ Check DB connection
+if (!$conn) {
+    die("Database connection failed!");
+}
 
 // ✅ Fetch users
 $query = mysqli_query($conn, "SELECT name, status FROM users");
@@ -33,10 +38,8 @@ if (!$query) {
             font-family: 'Segoe UI', sans-serif;
             background: linear-gradient(to bottom,#190019,#2B124C,#522B5B,#854F6C);
             color: black;
-            transition: 0.3s;
         }
 
-        /* 🌙 Dark Mode */
         body.dark-mode {
             background: #121212;
             color: white;
@@ -66,7 +69,6 @@ if (!$query) {
             padding: 25px;
             width: 350px;
             border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
         }
 
         body.dark-mode .home-box {
@@ -118,15 +120,6 @@ if (!$query) {
         body.dark-mode .menu a {
             color: white;
         }
-
-        /* 🌗 Theme Button */
-        #themeToggle {
-            margin-right: 10px;
-            cursor: pointer;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 6px;
-        }
     </style>
 </head>
 
@@ -136,11 +129,7 @@ if (!$query) {
     <h2>Connectify</h2>
 
     <div style="display:flex; align-items:center; gap:10px; position:relative;">
-        
-        <!-- 🌙 Theme Toggle -->
         <button id="themeToggle">🌙</button>
-
-        <!-- ⚙️ Menu -->
         <button onclick="toggleMenu()">⚙️</button>
 
         <div id="menu" class="menu">
@@ -167,42 +156,34 @@ if (!$query) {
 </div>
 
 <script>
-// ⚙️ Menu Toggle
 function toggleMenu() {
     let menu = document.getElementById("menu");
     menu.style.display = (menu.style.display === "block") ? "none" : "block";
 }
 
-// 🚪 Logout
 function logoutUser() {
     if (confirm("Logout?")) {
         window.location.href = "logout.php";
     }
 }
 
-// ❌ Close menu when clicking outside
 window.onclick = function(e) {
     if (!e.target.closest("button")) {
         document.getElementById("menu").style.display = "none";
     }
 }
 
-// 🌗 THEME TOGGLE LOGIC
 const toggleBtn = document.getElementById("themeToggle");
 
-// ✅ Load saved theme
 window.onload = () => {
     const savedTheme = localStorage.getItem("theme");
 
     if (savedTheme === "dark") {
         document.body.classList.add("dark-mode");
         toggleBtn.textContent = "☀️";
-    } else {
-        toggleBtn.textContent = "🌙";
     }
 };
 
-// ✅ Toggle theme
 toggleBtn.addEventListener("click", () => {
     document.body.classList.toggle("dark-mode");
 

@@ -1,7 +1,10 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
 
-// ✅ If already logged in → go to home
+// ✅ If already logged in → redirect to home
 if (isset($_SESSION['user_id'])) {
     header("Location: home.php");
     exit();
@@ -70,18 +73,18 @@ if (isset($_SESSION['user_id'])) {
 
 <body>
 
-    <div class="container">
-        <h1>Connectify</h1>
-        <h2>Connect. Chat. Stay safe.</h2>
+<div class="container">
+    <h1>Connectify</h1>
+    <h2>Connect. Chat. Stay safe.</h2>
 
-        <!-- ✅ Correct navigation -->
-        <a href="signup.php" class="btn">Sign Up</a>
-        <a href="login.php" class="btn">Login</a>
-    </div>
+    <!-- ✅ Navigation -->
+    <a href="signup.php" class="btn">Sign Up</a>
+    <a href="login.php" class="btn">Login</a>
+</div>
 
-    <div class="about">
-        <p>Connectify helps users communicate easily with safety and smart features.</p>
-    </div>
+<div class="about">
+    <p>Connectify helps users communicate easily with safety and smart features.</p>
+</div>
 
 </body>
 </html>

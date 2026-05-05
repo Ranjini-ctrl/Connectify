@@ -1,35 +1,21 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 session_start();
+include "../config/db1.php";
 
-//  Include DB correctly
-include __DIR__ . "/config/db.php";
+// check if user logged in
+if (isset($_SESSION['user'])) {
 
-//  Check DB connection
-if (!$conn) {
-    die("Database connection failed!");
+    $email = $_SESSION['user'];
+
+    // update status to offline
+    mysqli_query($conn, "UPDATE users SET status='offline' WHERE email='$email'");
 }
 
-// If user is logged in
-if (isset($_SESSION['user_id'])) {
-
-    $user_id = $_SESSION['user_id'];
-
-    // 🔄 Update status to offline
-    $sql = "UPDATE users SET status='offline' WHERE id='$user_id'";
-
-    if (!mysqli_query($conn, $sql)) {
-        echo "Error updating status: " . mysqli_error($conn);
-    }
-}
-
-//  Destroy session
-$_SESSION = [];
+// destroy session
+session_unset();
 session_destroy();
 
-//  Redirect to login page
-header("Location: index.php");
+// redirect to login page
+header("Location: ../index.html");
 exit();
 ?>

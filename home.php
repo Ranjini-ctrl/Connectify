@@ -10,16 +10,21 @@ if (!isset($_SESSION['user'])) {
     exit();
 }
 
-// ✅ FIXED PATH (change if needed)
+// ✅ Single DB connection (use ONE file only)
 include __DIR__ . "/config/db.php";
 
-// ❗ Check DB connection
+// ❗ Check DB
 if (!$conn) {
     die("Database connection failed!");
 }
 
-// ✅ Fetch users
-$query = mysqli_query($conn, "SELECT name, status FROM users");
+// ✅ Logged-in user
+$email = $_SESSION['user'];
+$res = mysqli_query($conn, "SELECT * FROM users WHERE email='$email'");
+$user = mysqli_fetch_assoc($res);
+
+// ✅ Fetch all users
+$query = mysqli_query($conn, "SELECT username, name, status, profile_pic FROM users");
 
 if (!$query) {
     die("Query error: " . mysqli_error($conn));
@@ -29,150 +34,183 @@ if (!$query) {
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Connectify</title>
+<meta charset="UTF-8">
+<title>Connectify</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(to bottom,#190019,#2B124C,#522B5B,#854F6C);
-            color: black;
-        }
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI';
+    background: linear-gradient(to bottom,#190019,#2B124C,#522B5B,#854F6C);
+}
 
-        body.dark-mode {
-            background: #121212;
-            color: white;
-        }
+/* DARK MODE */
+body.dark-mode {
+    background: #121212;
+    color: white;
+}
 
-        nav {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 20px;
-            background: #2c3e50;
-            color: white;
-        }
+/* HEADER */
+.header {
+    background: #2B124C;
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-        body.dark-mode nav {
-            background: #1f1f1f;
-        }
+/* RIGHT CONTROLS */
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+}
 
-        .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: calc(100vh - 60px);
-        }
+/* MENU */
+.menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 40px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
 
-        .home-box {
-            background: #FBE4D8;
-            padding: 25px;
-            width: 350px;
-            border-radius: 20px;
-        }
+body.dark-mode .menu {
+    background: #2a2a2a;
+}
 
-        body.dark-mode .home-box {
-            background: #1e1e1e;
-        }
+.menu a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: black;
+}
 
-        .user {
-            margin-top: 8px;
-            padding: 10px;
-            background: #DFB6B2;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
+body.dark-mode .menu a {
+    color: white;
+}
 
-        body.dark-mode .user {
-            background: #2a2a2a;
-        }
+/* USERS LIST */
+.users {
+    padding: 15px;
+}
 
-        .status-dot {
-            height: 10px;
-            width: 10px;
-            border-radius: 50%;
-        }
+.user {
+    display: flex;
+    align-items: center;
+    background: #FBE4D8;
+    margin-bottom: 10px;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    gap: 10px;
+}
 
-        .online { background: green; }
-        .offline { background: gray; }
+body.dark-mode .user {
+    background: #1e1e1e;
+}
 
-        .menu {
-            display: none;
-            position: absolute;
-            right: 10px;
-            top: 50px;
-            background: white;
-            border-radius: 8px;
-        }
+/* PROFILE IMAGE */
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
 
-        body.dark-mode .menu {
-            background: #2a2a2a;
-        }
+/* NAME */
+.name {
+    flex: 1;
+}
 
-        .menu a {
-            display: block;
-            padding: 10px;
-            text-decoration: none;
-            color: black;
-        }
+/* STATUS */
+.status {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
 
-        body.dark-mode .menu a {
-            color: white;
-        }
-    </style>
+.online { background: green; }
+.offline { background: gray; }
+
+</style>
 </head>
 
 <body>
 
-<nav>
-    <h2>Connectify</h2>
+<!-- HEADER -->
+<div class="header">
+    <span>Connectify 💬</span>
 
-    <div style="display:flex; align-items:center; gap:10px; position:relative;">
+    <div class="controls">
         <button id="themeToggle">🌙</button>
         <button onclick="toggleMenu()">⚙️</button>
 
+        <!-- Profile -->
+        <a href="profile.php">
+            <img src="../assets/images/<?php echo $user['profile_pic']; ?>" 
+            style="width:30px;height:30px;border-radius:50%;">
+        </a>
+
+        <!-- MENU -->
         <div id="menu" class="menu">
             <a href="profile.php">Profile</a>
             <a href="#" onclick="logoutUser()" style="color:red;">Logout</a>
         </div>
     </div>
-</nav>
+</div>
 
-<div class="container">
-    <div class="home-box">
-        <h2>Welcome 🎉</h2>
-        <p>Hello, <?php echo $_SESSION['user']; ?> 👋</p>
+<!-- USERS -->
+<div class="users">
 
-        <h3>Users</h3>
+<?php while ($row = mysqli_fetch_assoc($query)) { ?>
 
-        <?php while ($row = mysqli_fetch_assoc($query)) { ?>
-            <div class="user">
-                <span><?php echo $row['name']; ?></span>
-                <span class="status-dot <?php echo $row['status']; ?>"></span>
-            </div>
-        <?php } ?>
+    <div class="user" onclick="openChat('<?php echo $row['username']; ?>')">
+
+        <img src="../assets/images/<?php echo $row['profile_pic']; ?>" class="avatar">
+
+        <div class="name">
+            <?php echo $row['username'] ?: $row['name']; ?>
+        </div>
+
+        <div class="status <?php echo $row['status']; ?>"></div>
+
     </div>
+
+<?php } ?>
+
 </div>
 
 <script>
+// MENU
 function toggleMenu() {
     let menu = document.getElementById("menu");
     menu.style.display = (menu.style.display === "block") ? "none" : "block";
 }
 
+// LOGOUT
 function logoutUser() {
     if (confirm("Logout?")) {
         window.location.href = "logout.php";
     }
 }
 
+// CLOSE MENU
 window.onclick = function(e) {
-    if (!e.target.closest("button")) {
+    if (!e.target.closest(".controls")) {
         document.getElementById("menu").style.display = "none";
     }
 }
 
+// CHAT
+function openChat(user) {
+    window.location.href = "chat.php?user=" + user;
+}
+
+// THEME
 const toggleBtn = document.getElementById("themeToggle");
 
 window.onload = () => {

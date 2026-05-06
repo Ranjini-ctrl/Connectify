@@ -13,18 +13,17 @@ if (!isset($_SESSION['user'])) {
 // ✅ DB connection
 include __DIR__ . "/config/db.php";
 
-// ❗ Check DB
 if (!$conn) {
     die("Database connection failed!");
 }
 
-// ✅ Logged-in user
+// 👤 Logged-in user
 $email = $_SESSION['user'];
 $res = mysqli_query($conn, "SELECT * FROM users WHERE email='$email'");
 $user = mysqli_fetch_assoc($res);
 
-// ✅ FIXED QUERY (removed username)
-$query = mysqli_query($conn, "SELECT name, status, profile_pic FROM users");
+// 👥 Fetch all users (ADD id)
+$query = mysqli_query($conn, "SELECT id, name, status, profile_pic FROM users");
 
 if (!$query) {
     die("Query error: " . mysqli_error($conn));
@@ -112,6 +111,7 @@ body.dark-mode .user {
     width: 40px;
     height: 40px;
     border-radius: 50%;
+    object-fit: cover;
 }
 
 .name {
@@ -138,8 +138,9 @@ body.dark-mode .user {
         <button id="themeToggle">🌙</button>
         <button onclick="toggleMenu()">⚙️</button>
 
+        <!-- ✅ CURRENT USER PROFILE IMAGE -->
         <a href="profile.php">
-            <img src="../assets/images/<?php echo $user['profile_pic']; ?>" 
+            <img src="uploads/<?php echo $user['profile_pic'] ?: 'default.png'; ?>" 
             style="width:30px;height:30px;border-radius:50%;">
         </a>
 
@@ -154,9 +155,10 @@ body.dark-mode .user {
 
 <?php while ($row = mysqli_fetch_assoc($query)) { ?>
 
-    <div class="user" onclick="openChat('<?php echo $row['name']; ?>')">
+    <div class="user" onclick="openChat(<?php echo $row['id']; ?>)">
 
-        <img src="../assets/images/<?php echo $row['profile_pic']; ?>" class="avatar">
+        <!-- ✅ PROFILE IMAGE FIXED -->
+        <img src="uploads/<?php echo $row['profile_pic'] ?: 'default.png'; ?>" class="avatar">
 
         <div class="name">
             <?php echo $row['name']; ?>
@@ -171,27 +173,32 @@ body.dark-mode .user {
 </div>
 
 <script>
+// MENU
 function toggleMenu() {
     let menu = document.getElementById("menu");
     menu.style.display = (menu.style.display === "block") ? "none" : "block";
 }
 
+// LOGOUT
 function logoutUser() {
     if (confirm("Logout?")) {
         window.location.href = "logout.php";
     }
 }
 
+// CLOSE MENU
 window.onclick = function(e) {
     if (!e.target.closest(".controls")) {
         document.getElementById("menu").style.display = "none";
     }
 }
 
-function openChat(user) {
-    window.location.href = "chat.php?user=" + user;
+// ✅ CHAT FIX (use ID)
+function openChat(user_id) {
+    window.location.href = "chat.php?user_id=" + user_id;
 }
 
+// THEME
 const toggleBtn = document.getElementById("themeToggle");
 
 window.onload = () => {

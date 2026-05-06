@@ -22,8 +22,17 @@ $email = $_SESSION['user'];
 $res = mysqli_query($conn, "SELECT * FROM users WHERE email='$email'");
 $user = mysqli_fetch_assoc($res);
 
-// 👥 Fetch all users (ADD id)
-$query = mysqli_query($conn, "SELECT id, name, status, profile_pic FROM users");
+// ✅ IMPORTANT: set user_id if missing
+if (!isset($_SESSION['user_id'])) {
+    $_SESSION['user_id'] = $user['id'];
+}
+
+// 👥 Fetch all users EXCEPT current user
+$current_id = $_SESSION['user_id'];
+
+$query = mysqli_query($conn, 
+    "SELECT id, name, status, profile_pic FROM users WHERE id != '$current_id'"
+);
 
 if (!$query) {
     die("Query error: " . mysqli_error($conn));
@@ -138,7 +147,7 @@ body.dark-mode .user {
         <button id="themeToggle">🌙</button>
         <button onclick="toggleMenu()">⚙️</button>
 
-        <!-- ✅ CURRENT USER PROFILE IMAGE -->
+        <!-- 👤 CURRENT USER -->
         <a href="profile.php">
             <img src="uploads/<?php echo $user['profile_pic'] ?: 'default.png'; ?>" 
             style="width:30px;height:30px;border-radius:50%;">
@@ -157,7 +166,6 @@ body.dark-mode .user {
 
     <div class="user" onclick="openChat(<?php echo $row['id']; ?>)">
 
-        <!-- ✅ PROFILE IMAGE FIXED -->
         <img src="uploads/<?php echo $row['profile_pic'] ?: 'default.png'; ?>" class="avatar">
 
         <div class="name">
@@ -193,7 +201,7 @@ window.onclick = function(e) {
     }
 }
 
-// ✅ CHAT FIX (use ID)
+// ✅ CHAT (correct)
 function openChat(user_id) {
     window.location.href = "chat.php?user_id=" + user_id;
 }

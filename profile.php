@@ -1,10 +1,19 @@
 <?php
 session_start();
-include "../config/db1.php";
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
+// ✅ DB connection
+include __DIR__ . "/config/db.php";
+
+// 🔒 Session check
 if (!isset($_SESSION['user'])) {
     header("Location: login.php");
     exit();
+}
+
+if (!$conn) {
+    die("Database connection failed!");
 }
 
 $email = $_SESSION['user'];
@@ -12,34 +21,40 @@ $email = $_SESSION['user'];
 /* ================= UPDATE LOGIC ================= */
 if (isset($_POST['update'])) {
 
-    $username = trim($_POST['username']);
+    $name = mysqli_real_escape_string($conn, $_POST['name']);
 
-    // IMAGE
-    $image = $_FILES['image']['name'];
-    $temp = $_FILES['image']['tmp_name'];
+    // IMAGE UPLOAD
+    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
 
-    // IMAGE UPDATE (with validation)
-    if (!empty($image)) {
+        $image = $_FILES['image']['name'];
+        $temp = $_FILES['image']['tmp_name'];
 
         $allowed = ['jpg', 'jpeg', 'png'];
         $ext = strtolower(pathinfo($image, PATHINFO_EXTENSION));
 
         if (in_array($ext, $allowed)) {
 
-            $imageName = time() . "_" . $image;
+            $imageName = time() . "_" . basename($image);
 
-            move_uploaded_file($temp, "../assets/images/" . $imageName);
+            // ✅ Upload path (uploads folder)
+            $targetPath = __DIR__ . "/uploads/" . $imageName;
 
-            mysqli_query($conn, "UPDATE users SET profile_pic='$imageName' WHERE email='$email'");
+            if (move_uploaded_file($temp, $targetPath)) {
+
+                mysqli_query($conn, "UPDATE users SET profile_pic='$imageName' WHERE email='$email'");
+
+            } else {
+                echo "<script>alert('Image upload failed');</script>";
+            }
 
         } else {
             echo "<script>alert('Only JPG, JPEG, PNG allowed');</script>";
         }
     }
 
-    // USERNAME UPDATE
-    if (!empty($username)) {
-        mysqli_query($conn, "UPDATE users SET username='$username' WHERE email='$email'");
+    // NAME UPDATE
+    if (!empty($name)) {
+        mysqli_query($conn, "UPDATE users SET name='$name' WHERE email='$email'");
     }
 
     echo "<script>alert('Profile Updated'); window.location='profile.php';</script>";
@@ -74,7 +89,7 @@ $user = mysqli_fetch_assoc($query);
             text-align: center;
         }
 
-        .profile-box img {
+        img {
             width: 100px;
             height: 100px;
             border-radius: 50%;
@@ -82,27 +97,17 @@ $user = mysqli_fetch_assoc($query);
             margin-bottom: 15px;
         }
 
-        h2 {
-            color: #2B124C;
-        }
-
-        p {
-            color: #522B5B;
-            margin: 8px 0;
-        }
+        h2 { color: #2B124C; }
+        p { color: #522B5B; }
 
         a {
             display: inline-block;
             margin-top: 15px;
             text-decoration: none;
             background: #2B124C;
-            color: #FBE4D8;
+            color: white;
             padding: 8px 15px;
             border-radius: 8px;
-        }
-
-        a:hover {
-            background: #190019;
         }
 
         button {
@@ -113,10 +118,6 @@ $user = mysqli_fetch_assoc($query);
             color: white;
             border-radius: 6px;
             cursor: pointer;
-        }
-
-        button:hover {
-            background: #190019;
         }
 
         input {
@@ -134,16 +135,16 @@ $user = mysqli_fetch_assoc($query);
 <div class="profile-box">
 
     <!-- PROFILE IMAGE -->
-    <img src="../assets/images/<?php echo $user['profile_pic'] ?: 'default.png'; ?>">
+    <img src="uploads/<?php echo $user['profile_pic'] ?: 'default.png'; ?>">
 
     <!-- NAME -->
-    <h2><?php echo $user['username']; ?></h2>
+    <h2><?php echo $user['name']; ?></h2>
 
     <!-- EMAIL -->
     <p><?php echo $user['email']; ?></p>
 
     <!-- BACK -->
-    <a href="home1.php">⬅ Back</a>
+    <a href="home.php">⬅ Back</a>
 
     <br><br>
 
@@ -155,8 +156,7 @@ $user = mysqli_fetch_assoc($query);
 
         <form method="POST" enctype="multipart/form-data">
 
-            <!-- pre-filled name -->
-            <input type="text" name="username" value="<?php echo $user['username']; ?>">
+            <input type="text" name="name" value="<?php echo $user['name']; ?>">
 
             <input type="file" name="image">
 

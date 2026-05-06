@@ -10,7 +10,7 @@ if (!isset($_SESSION['user'])) {
     exit();
 }
 
-// ✅ Single DB connection (use ONE file only)
+// ✅ DB connection
 include __DIR__ . "/config/db.php";
 
 // ❗ Check DB
@@ -23,8 +23,8 @@ $email = $_SESSION['user'];
 $res = mysqli_query($conn, "SELECT * FROM users WHERE email='$email'");
 $user = mysqli_fetch_assoc($res);
 
-// ✅ Fetch all users
-$query = mysqli_query($conn, "SELECT username, name, status, profile_pic FROM users");
+// ✅ FIXED QUERY (removed username)
+$query = mysqli_query($conn, "SELECT name, status, profile_pic FROM users");
 
 if (!$query) {
     die("Query error: " . mysqli_error($conn));
@@ -44,13 +44,11 @@ body {
     background: linear-gradient(to bottom,#190019,#2B124C,#522B5B,#854F6C);
 }
 
-/* DARK MODE */
 body.dark-mode {
     background: #121212;
     color: white;
 }
 
-/* HEADER */
 .header {
     background: #2B124C;
     color: white;
@@ -60,7 +58,6 @@ body.dark-mode {
     align-items: center;
 }
 
-/* RIGHT CONTROLS */
 .controls {
     display: flex;
     align-items: center;
@@ -68,7 +65,6 @@ body.dark-mode {
     position: relative;
 }
 
-/* MENU */
 .menu {
     display: none;
     position: absolute;
@@ -76,7 +72,6 @@ body.dark-mode {
     top: 40px;
     background: white;
     border-radius: 8px;
-    overflow: hidden;
 }
 
 body.dark-mode .menu {
@@ -94,7 +89,6 @@ body.dark-mode .menu a {
     color: white;
 }
 
-/* USERS LIST */
 .users {
     padding: 15px;
 }
@@ -114,19 +108,16 @@ body.dark-mode .user {
     background: #1e1e1e;
 }
 
-/* PROFILE IMAGE */
 .avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
 }
 
-/* NAME */
 .name {
     flex: 1;
 }
 
-/* STATUS */
 .status {
     width: 10px;
     height: 10px;
@@ -135,13 +126,11 @@ body.dark-mode .user {
 
 .online { background: green; }
 .offline { background: gray; }
-
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
     <span>Connectify 💬</span>
 
@@ -149,13 +138,11 @@ body.dark-mode .user {
         <button id="themeToggle">🌙</button>
         <button onclick="toggleMenu()">⚙️</button>
 
-        <!-- Profile -->
         <a href="profile.php">
             <img src="../assets/images/<?php echo $user['profile_pic']; ?>" 
             style="width:30px;height:30px;border-radius:50%;">
         </a>
 
-        <!-- MENU -->
         <div id="menu" class="menu">
             <a href="profile.php">Profile</a>
             <a href="#" onclick="logoutUser()" style="color:red;">Logout</a>
@@ -163,17 +150,16 @@ body.dark-mode .user {
     </div>
 </div>
 
-<!-- USERS -->
 <div class="users">
 
 <?php while ($row = mysqli_fetch_assoc($query)) { ?>
 
-    <div class="user" onclick="openChat('<?php echo $row['username']; ?>')">
+    <div class="user" onclick="openChat('<?php echo $row['name']; ?>')">
 
         <img src="../assets/images/<?php echo $row['profile_pic']; ?>" class="avatar">
 
         <div class="name">
-            <?php echo $row['username'] ?: $row['name']; ?>
+            <?php echo $row['name']; ?>
         </div>
 
         <div class="status <?php echo $row['status']; ?>"></div>
@@ -185,32 +171,27 @@ body.dark-mode .user {
 </div>
 
 <script>
-// MENU
 function toggleMenu() {
     let menu = document.getElementById("menu");
     menu.style.display = (menu.style.display === "block") ? "none" : "block";
 }
 
-// LOGOUT
 function logoutUser() {
     if (confirm("Logout?")) {
         window.location.href = "logout.php";
     }
 }
 
-// CLOSE MENU
 window.onclick = function(e) {
     if (!e.target.closest(".controls")) {
         document.getElementById("menu").style.display = "none";
     }
 }
 
-// CHAT
 function openChat(user) {
     window.location.href = "chat.php?user=" + user;
 }
 
-// THEME
 const toggleBtn = document.getElementById("themeToggle");
 
 window.onload = () => {

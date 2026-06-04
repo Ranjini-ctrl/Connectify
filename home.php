@@ -229,7 +229,7 @@ toggleBtn.addEventListener("click", () => {
         toggleBtn.textContent = "🌙";
     }
 });
-</script>
+<script>
 
 </body>
 </html>
